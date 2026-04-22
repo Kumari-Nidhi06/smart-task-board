@@ -1,6 +1,13 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  TouchSensor,
+} from "@dnd-kit/core";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -30,18 +37,28 @@ const Board = () => {
     { title: "Done", key: "done" },
   ];
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150, // long press
+        tolerance: 5,
+      },
+    }),
+  );
+
   // ✅ LOAD FROM LOCALSTORAGE
   useEffect(() => {
     const saved = localStorage.getItem("tasks");
     if (saved) {
       setTasks(JSON.parse(saved));
     }
-    setIsLoaded(true); 
+    setIsLoaded(true);
   }, []);
 
   // ✅ SAVE TO LOCALSTORAGE
   useEffect(() => {
-    if (!isLoaded) return; 
+    if (!isLoaded) return;
 
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks, isLoaded]);
@@ -50,7 +67,7 @@ const Board = () => {
   const handleSaveTask = (task) => {
     if (editingTask) {
       setTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? { ...t, ...task } : t))
+        prev.map((t) => (t.id === task.id ? { ...t, ...task } : t)),
       );
     } else {
       setTasks((prev) => [...prev, task]);
@@ -87,22 +104,16 @@ const Board = () => {
 
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === draggedTaskId
-          ? { ...task, status: newStatus }
-          : task
-      )
+        task.id === draggedTaskId ? { ...task, status: newStatus } : task,
+      ),
     );
   };
 
-  // ✅ FILTER LOGIC 
+  // ✅ FILTER LOGIC
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
-      (task.title || "")
-        .toLowerCase()
-        .includes(search.toLowerCase()) ||
-      (task.description || "")
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      (task.title || "").toLowerCase().includes(search.toLowerCase()) ||
+      (task.description || "").toLowerCase().includes(search.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || task.status === statusFilter;
@@ -114,9 +125,8 @@ const Board = () => {
   });
 
   return (
-    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <div className="flex-1 p-4 sm:p-6 overflow-x-auto">
-
         {/* SEARCH + FILTER */}
         <div className="mb-6 flex flex-col sm:flex-row gap-3 w-full">
           <input
