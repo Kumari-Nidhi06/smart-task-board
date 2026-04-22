@@ -10,11 +10,11 @@ import TaskModal from "./TaskModal";
 import Column from "./Column";
 import ConfirmModal from "./ConfirmModal";
 import Stats from "./Stats";
-import { getTasks, addTask, updateTask, deleteTask } from "../api/taskApi";
 import GlassDropdown from "./GlassDropdown";
 
 const Board = () => {
   const [tasks, setTasks] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("todo");
   const [editingTask, setEditingTask] = useState(null);
@@ -30,42 +30,45 @@ const Board = () => {
     { title: "Done", key: "done" },
   ];
 
-  const fetchTasks = async () => {
-    const res = await getTasks();
-    setTasks(res.data);
-  };
-
+  // ✅ LOAD FROM LOCALSTORAGE
   useEffect(() => {
-    fetchTasks();
+    const saved = localStorage.getItem("tasks");
+    if (saved) {
+      setTasks(JSON.parse(saved));
+    }
+    setIsLoaded(true); 
   }, []);
 
-  const handleSaveTask = async (task) => {
+  // ✅ SAVE TO LOCALSTORAGE
+  useEffect(() => {
+    if (!isLoaded) return; 
+
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks, isLoaded]);
+
+  // ✅ SAVE TASK
+  const handleSaveTask = (task) => {
     if (editingTask) {
-      //  TASK API
-      const res = await updateTask(task.id, task);
-
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? res.data : t)));
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, ...task } : t))
+      );
     } else {
-      // ADD TASK API
-      const res = await addTask(task);
-
-      setTasks((prev) => [...prev, res.data]);
+      setTasks((prev) => [...prev, task]);
     }
 
     setEditingTask(null);
     setShowModal(false);
   };
 
-  const handleDeleteTask = async () => {
-    await deleteTask(deleteId);
-
+  // ✅ DELETE TASK
+  const handleDeleteTask = () => {
     setTasks((prev) => prev.filter((t) => t.id !== deleteId));
-
     toast.success("Task deleted 🗑️");
     setDeleteId(null);
   };
 
-  const handleDragEnd = async (event) => {
+  // ✅ DRAG + CONFETTI
+  const handleDragEnd = (event) => {
     const { active, over } = event;
     if (!over) return;
 
@@ -74,7 +77,6 @@ const Board = () => {
 
     const draggedTask = tasks.find((t) => t.id === draggedTaskId);
 
-    // Confetti
     if (draggedTask?.status !== "done" && newStatus === "done") {
       confetti({
         particleCount: 300,
@@ -83,21 +85,24 @@ const Board = () => {
       });
     }
 
-    const updatedTasks = tasks.map((task) =>
-      task.id === draggedTaskId ? { ...task, status: newStatus } : task,
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === draggedTaskId
+          ? { ...task, status: newStatus }
+          : task
+      )
     );
-
-    setTasks(updatedTasks);
-
-    const movedTask = updatedTasks.find((t) => t.id === draggedTaskId);
-    await updateTask(movedTask.id, movedTask);
   };
 
-  //  FILTER LOGIC
+  // ✅ FILTER LOGIC 
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
-      task.title.toLowerCase().includes(search.toLowerCase()) ||
-      task.description.toLowerCase().includes(search.toLowerCase());
+      (task.title || "")
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      (task.description || "")
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || task.status === statusFilter;
@@ -111,18 +116,17 @@ const Board = () => {
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <div className="flex-1 p-4 sm:p-6 overflow-x-auto">
-        {/* SEARCH + FILTER BAR */}
+
+        {/* SEARCH + FILTER */}
         <div className="mb-6 flex flex-col sm:flex-row gap-3 w-full">
-          {/* Search */}
           <input
             type="text"
             placeholder="🔍 Search tasks..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:flex-1 p-2 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none backdrop-blur-md"
+            className="w-full sm:flex-1 p-2 rounded-lg bg-white/5 border border-white/10 text-white backdrop-blur-md"
           />
 
-          {/* Status Dropdown */}
           <GlassDropdown
             value={statusFilter}
             onChange={setStatusFilter}
@@ -135,7 +139,6 @@ const Board = () => {
             ]}
           />
 
-          {/* Priority Dropdown */}
           <GlassDropdown
             value={priorityFilter}
             onChange={setPriorityFilter}
@@ -176,7 +179,7 @@ const Board = () => {
                   </p>
                 )}
 
-                {tasks
+                {filteredTasks
                   .filter((task) => task.status === col.key)
                   .map((task) => (
                     <TaskCard
@@ -195,7 +198,7 @@ const Board = () => {
           ))}
         </div>
 
-        {/* Task Modal */}
+        {/* MODAL */}
         {showModal && (
           <TaskModal
             status={selectedStatus}
@@ -208,7 +211,7 @@ const Board = () => {
           />
         )}
 
-        {/* Confirm Delete */}
+        {/* DELETE */}
         {deleteId && (
           <ConfirmModal
             onConfirm={handleDeleteTask}

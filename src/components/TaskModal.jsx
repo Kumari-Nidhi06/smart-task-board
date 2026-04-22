@@ -26,7 +26,7 @@ const TaskModal = ({ onClose, onAdd, status, editingTask }) => {
       title,
       description,
       priority,
-      status,
+      status: editingTask?.status || status || "todo",
     });
 
     onClose();
