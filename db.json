@@ -1,0 +1,47 @@
+{
+  "tasks": [
+    {
+      "id": "1WKdG3vZ9wY",
+      "title": "bh",
+      "description": "bh",
+      "priority": "Medium",
+      "status": "inprogress"
+    },
+    {
+      "id": "PTPrpvgk3qw",
+      "title": "bhb",
+      "description": "bb",
+      "priority": "Medium",
+      "status": "done"
+    },
+    {
+      "id": "znpx-w0S8eY",
+      "title": "ok",
+      "description": "ok",
+      "priority": "Low",
+      "status": "done"
+    },
+    {
+      "id": "elysKbpSKKk",
+      "title": "okk",
+      "description": "hhjcfc",
+      "priority": "Low",
+      "status": "todo"
+    },
+    {
+      "id": "Ab5QOCpbs68",
+      "title": "hhrfb",
+      "description": "bbf",
+      "priority": "Low",
+      "status": "todo"
+    },
+    {
+      "id": "qfLi4Z-rwys",
+      "title": "hvbhv",
+      "description": "jjffn",
+      "priority": "High",
+      "status": "todo"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
