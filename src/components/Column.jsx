@@ -6,6 +6,9 @@ const Column = ({ id, title, children, onAdd }) => {
   return (
     <div
       ref={setNodeRef}
+      style={{
+        touchAction: "none", 
+      }}
       className={`
         w-full sm:w-80 flex-shrink-0
         rounded-2xl p-4 backdrop-blur-xl border border-white/10 shadow-xl transition

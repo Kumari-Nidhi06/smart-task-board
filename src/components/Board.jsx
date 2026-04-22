@@ -38,14 +38,18 @@ const Board = () => {
   ];
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 150, // long press
-        tolerance: 5,
-      },
-    }),
-  );
+  useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 8, 
+    },
+  }),
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 100,
+      tolerance: 10,
+    },
+  })
+);
 
   // ✅ LOAD FROM LOCALSTORAGE
   useEffect(() => {
@@ -125,7 +129,7 @@ const Board = () => {
   });
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}  autoScroll={true}>
       <div className="flex-1 p-4 sm:p-6 overflow-x-auto">
         {/* SEARCH + FILTER */}
         <div className="mb-6 flex flex-col sm:flex-row gap-3 w-full">

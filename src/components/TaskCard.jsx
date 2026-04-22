@@ -3,14 +3,17 @@ import { useDraggable } from "@dnd-kit/core";
 import { motion } from "framer-motion";
 
 const TaskCard = ({ task, onEdit, onDelete }) => {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: task.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: task.id,
+    });
 
   const style = {
     transform: transform
-      ? `translate(${transform.x}px, ${transform.y}px)`
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
       : undefined,
+    zIndex: isDragging ? 999 : "auto",
+    opacity: isDragging ? 0.8 : 1,
   };
 
   return (
@@ -18,9 +21,9 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
       <div
         ref={setNodeRef}
         style={style}
-        className="bg-white/10 backdrop-blur-xl p-4 rounded-xl shadow-md mb-3 border border-white/10 hover:bg-white/20 transition-all duration-300"
+        className="bg-white/10 backdrop-blur-xl p-4 rounded-xl shadow-md mb-3 border border-white/10 hover:bg-white/20 transition-all duration-300 select-none touch-none"
       >
-        {/* Top Row (Drag + Priority) */}
+        {/* Top Row */}
         <div className="flex justify-between items-center mb-2">
           <span
             className={`text-xs px-3 py-1 rounded-full font-medium ${
@@ -34,11 +37,11 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
             {task.priority}
           </span>
 
-          {/* Drag Handle */}
+          {/* Drag Handle  */}
           <div
             {...listeners}
             {...attributes}
-            className="cursor-grab text-gray-400 opacity-40 hover:opacity-100 transition"
+            className="cursor-grab text-gray-400 opacity-60 hover:opacity-100 transition p-1"
           >
             <GripVertical size={18} />
           </div>
@@ -46,7 +49,6 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
 
         <h4 className="font-semibold text-white/90">{task.title}</h4>
 
-        {/*  Description  */}
         <p className="text-sm text-gray-300 mt-1 line-clamp-2">
           {task.description}
         </p>
